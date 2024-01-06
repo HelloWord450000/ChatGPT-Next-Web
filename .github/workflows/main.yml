@@ -15,16 +15,24 @@ jobs:
     if: ${{ github.event.repository.fork }}
 
     steps:
-      # 步骤 1：运行标准的检出操作
-      - name: 检出目标仓库
-        uses: actions/checkout@v3
-
-      # 步骤 2：保存本地更改
+      # 步骤 1：删除旧的目标目录
+      - name: 删除旧目录
+        run: |
+          rm -rf target_repo
+          
+      # 步骤 2：克隆上游仓库到新的目标目录
+      - name: 克隆上游仓库
+        run: |
+          git clone https://github.com/ChatGPTNextWeb/ChatGPT-Next-Web.git target_repo
+          cd target_repo
+          git checkout main  # 切换到主分支
+          
+      # 步骤 3：保存本地更改
       - name: 保存本地更改
         run: |
           git stash save "本地更改"
 
-      # 步骤 3：添加上游远程仓库并拉取变更
+      # 步骤 4：合并上游变更
       - name: 同步上游变更
         run: |
           git remote add upstream https://github.com/ChatGPTNextWeb/ChatGPT-Next-Web.git
@@ -41,15 +49,14 @@ jobs:
           # 提交合并
           git commit -m "合并上游变更"
 
-      # 步骤 4：应用保存的本地更改
+      # 步骤 5：应用保存的本地更改
       - name: 恢复本地更改
         run: |
           git stash pop
 
-      # 步骤 5：检查同步是否失败
+      # 步骤 6：检查同步是否失败
       - name: 同步检查
         if: failure()
         run: |
           echo "[错误] 由于上游仓库的 workflow 文件变更，导致 GitHub 自动暂停了本次自动更新。您需要手动同步您的分支。请参阅详细教程：https://github.com/Yidadaa/ChatGPT-Next-Web#enable-automatic-updates"
           exit 1
-
