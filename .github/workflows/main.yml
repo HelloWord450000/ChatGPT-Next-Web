@@ -47,3 +47,5 @@ jobs:
 
       - name: 将更改推送到 origin 仓库
         run: git push origin main
+        env: 
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
