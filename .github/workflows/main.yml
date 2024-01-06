@@ -23,7 +23,7 @@ jobs:
         run: git stash save "本地修改"
 
       - name: 合并上游仓库的更改，允许后续修改
-        run: git merge --no-commit upstream/main
+        run: git merge --no-commit --allow-unrelated-histories upstream/main
 
       - name: 跳过合并中的指定文件
         run: |
