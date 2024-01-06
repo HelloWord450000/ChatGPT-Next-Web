@@ -1,11 +1,11 @@
-name: Upstream Sync Custom
+name: 上游同步
 
 permissions:
   contents: write
 
 on:
   schedule:
-    - cron: "0 0 * * *" # 每天
+    - cron: "0 0 * * *" # 每天执行
   workflow_dispatch:
 
 jobs:
@@ -15,25 +15,41 @@ jobs:
     if: ${{ github.event.repository.fork }}
 
     steps:
-      # 步骤1：运行标准的检出操作
-      - name: 检出目标存储库
+      # 步骤 1：运行标准的检出操作
+      - name: 检出目标仓库
         uses: actions/checkout@v3
 
-      # 步骤2：获取上游更改
-      - name: 获取上游更改
-        run: git fetch upstream main
-
-      # 步骤3：从上游合并更改
-      - name: 从上游合并更改
-        run: git merge upstream/main
-
-      # 步骤4：处理合并冲突（可选）
-      - name: 处理合并冲突
+      # 步骤 2：保存本地更改
+      - name: 保存本地更改
         run: |
-          git diff --name-only --diff-filter=U | xargs -I {} git checkout --ours "{}"
-          git add .
-          git commit -m "通过选择我们的更改解决合并冲突"
+          git stash save "本地更改"
 
-      # 步骤5：将更改推送到分叉存储库
-      - name: 将更改推送到分叉存储库
-        run: git push origin main
+      # 步骤 3：添加上游远程仓库并拉取变更
+      - name: 同步上游变更
+        run: |
+          git remote add upstream https://github.com/ChatGPTNextWeb/ChatGPT-Next-Web.git
+          git fetch upstream main
+
+          # 使用 merge 合并上游变更，确保使用 "--no-commit" 选项以允许后续修改
+          git merge --no-commit upstream/main
+
+          # 跳过合并中的多个指定文件
+          # git checkout -- path/to/skip/file1
+          # git checkout -- path/to/skip/file2
+          # git checkout -- path/to/skip/file3
+
+          # 提交合并
+          git commit -m "合并上游变更"
+
+      # 步骤 4：应用保存的本地更改
+      - name: 恢复本地更改
+        run: |
+          git stash pop
+
+      # 步骤 5：检查同步是否失败
+      - name: 同步检查
+        if: failure()
+        run: |
+          echo "[错误] 由于上游仓库的 workflow 文件变更，导致 GitHub 自动暂停了本次自动更新。您需要手动同步您的分支。请参阅详细教程：https://github.com/Yidadaa/ChatGPT-Next-Web#enable-automatic-updates"
+          exit 1
+
