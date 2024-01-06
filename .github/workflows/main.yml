@@ -32,9 +32,7 @@ jobs:
 
       - name: 跳过合并中的指定文件
         run: |
-          git checkout -- path/to/skip/file1
-          git checkout -- path/to/skip/file2
-          git checkout -- path/to/skip/file3
+          git checkout -- .github/workflows/main.yml
 
       - name: 提交合并的更改
         run: git commit -m "合并上游仓库的更改"
