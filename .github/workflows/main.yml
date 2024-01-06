@@ -5,33 +5,35 @@ permissions:
 
 on:
   schedule:
-    - cron: "0 0 * * *" # 每天执行
+    - cron: "0 0 * * *" # 每天
   workflow_dispatch:
 
 jobs:
   sync_latest_from_upstream:
-    name: Sync latest commits from upstream repo
+    name: 从上游同步最新提交
     runs-on: ubuntu-latest
     if: ${{ github.event.repository.fork }}
 
     steps:
-      - name: Checkout target repo
+      # 步骤1：运行标准的检出操作
+      - name: 检出目标存储库
         uses: actions/checkout@v3
 
-      - name: Save local changes and sync upstream
+      # 步骤2：获取上游更改
+      - name: 获取上游更改
+        run: git fetch upstream main
+
+      # 步骤3：从上游合并更改
+      - name: 从上游合并更改
+        run: git merge upstream/main
+
+      # 步骤4：处理合并冲突（可选）
+      - name: 处理合并冲突
         run: |
-          # 保存当前工作目录的变更
-          git stash save "Local changes"
+          git diff --name-only --diff-filter=U | xargs -I {} git checkout --ours "{}"
+          git add .
+          git commit -m "通过选择我们的更改解决合并冲突"
 
-          # 同步上游仓库的变更
-          git pull upstream main
-
-          # 将保存的变更应用回来
-          git stash pop
-
-      - name: Sync check
-        if: failure()
-        run: |
-          echo "[Error] 由于上游仓库的 workflow 文件变更，导致 GitHub 自动暂停了本次自动更新，你需要手动 Sync Fork 一次，详细教程请查看：https://github.com/Yidadaa/ChatGPT-Next-Web/blob/main/README_CN.md#%E6%89%93%E5%BC%80%E8%87%AA%E5%8A%A8%E6%9B%B4%E6%96%B0"
-          echo "[Error] Due to a change in the workflow file of the upstream repository, GitHub has automatically suspended the scheduled automatic update. You need to manually sync your fork. Please refer to the detailed tutorial for instructions: https://github.com/Yidadaa/ChatGPT-Next-Web#enable-automatic-updates"
-          exit 1
+      # 步骤5：将更改推送到分叉存储库
+      - name: 将更改推送到分叉存储库
+        run: git push origin main
