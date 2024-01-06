@@ -1,4 +1,4 @@
-name: Upstream Sync
+name: Custom Upstream Sync
 
 permissions:
   contents: write
