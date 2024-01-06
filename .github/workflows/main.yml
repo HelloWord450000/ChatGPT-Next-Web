@@ -18,24 +18,15 @@ jobs:
       - name: Checkout target repo
         uses: actions/checkout@v3
 
-      - name: Save local changes
+      - name: Save local changes and sync upstream
         run: |
-          # 使用git stash保存当前工作目录的变更
+          # 保存当前工作目录的变更
           git stash save "Local changes"
 
-      - name: Sync upstream changes
-        id: sync
-        uses: aormsby/Fork-Sync-With-Upstream-action@v3.4
-        with:
-          upstream_sync_repo: ChatGPTNextWeb/ChatGPT-Next-Web
-          upstream_sync_branch: main
-          target_sync_branch: main
-          target_repo_token: ${{ secrets.GITHUB_TOKEN }}
-          test_mode: false
+          # 同步上游仓库的变更
+          git pull upstream main
 
-      - name: Apply local changes back
-        run: |
-          # 使用git stash pop将保存的变更应用回来
+          # 将保存的变更应用回来
           git stash pop
 
       - name: Sync check
