@@ -21,6 +21,11 @@ jobs:
 
       - name: 保存本地修改
         run: git stash save "本地修改"
+        
+      - name: 设置 Git 用户信息
+        run: |
+          git config user.email "you@example.com"
+          git config user.name "Your Name"
 
       - name: 合并上游仓库的更改，允许后续修改
         run: git merge --no-commit --allow-unrelated-histories upstream/main
