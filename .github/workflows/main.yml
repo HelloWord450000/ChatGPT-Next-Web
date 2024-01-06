@@ -37,8 +37,13 @@ jobs:
       - name: 提交合并的更改
         run: git commit -m "合并上游仓库的更改"
 
-      - name: 恢复本地修改
-        run: git stash pop
+      - name: 恢复本地变更
+        run: |
+          if git rev-parse --verify refs/stash; then
+            git stash pop
+          else
+            echo "No stash entries found."
+          fi
 
       - name: 将更改推送到 origin 仓库
         run: git push origin main
